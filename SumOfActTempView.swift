@@ -16,6 +16,7 @@ fileprivate struct SumOfActTempMark{
         self.date = date
         self.sumOfActTemp = sumOfActTemp
     }
+    
     init(coreDataMark:FetchedResults<Mark>.Element, sumOfActTemp:String){
         self.name = coreDataMark.name ?? "Error"
         self.date = coreDataMark.date ?? Date()
@@ -29,20 +30,32 @@ struct SumOfActTempView: View {
         SortDescriptor(\.date),
         SortDescriptor(\.name)
     ]) var marks: FetchedResults<Mark>
+    
     private let maxMarksCount: Int = 5
     
     private let minCountingTemp: Float
+    
     private let latitude:Double
     private let longitude:Double
+    
     private let firstDayOfYear: Date
+    
     private let cUWidth: CGFloat
     private let cUHeight: CGFloat
-    @State private var sumOfActTempString: String = ""
+    
+    
     @State private var selectedDate: Date
-    @State private var sumOfActTempMarks: [SumOfActTempMark] = []
-    @State private var currentMarkIndex: Int? = nil
+    
     @State private var showRedactor:Bool = false
+    
+    @State private var currentMarkIndex: Int? = nil
+    
+    @State private var sumOfActTempString: String = ""
+    
+    @State private var sumOfActTempMarks: [SumOfActTempMark] = []
+    
     @State private var markToRedact:SumOfActTempMark = SumOfActTempMark(name: "", date: Date(), sumOfActTemp: "")
+    
     init(cUHeigh:CGFloat, cUWidth: CGFloat, minCountingTemp: Float, latitude: Double, longitude: Double){
         let calendar = Calendar.current
         let currentYear = calendar.component(.year, from: Date())
@@ -55,20 +68,14 @@ struct SumOfActTempView: View {
         self.minCountingTemp = minCountingTemp
         self.cUHeight = cUHeigh
     }
+    
     var body: some View {
         VStack(alignment: .center,spacing: nil, content: {
             VStack(spacing: 0, content: {
-//                Button(action: {
-//                    deleteAllMarks()
-//                }, label: {
-//                    Rectangle()
-//                        .fill(.red)
-//                        .frame(height: 100)
-//                })
-                //                dropdownMenu(width: cUWidth * 0.8 , height: cUWidth * 0.3, menuHeight: cUWidth * 0.6, array: $sumOfActTempMarks, picked: $markToRedact)
-                //                    .zIndex(10)
+                
                 Text("Сумма активных температур")
                     .frame(height: cUWidth * 0.1, alignment: .bottom)
+                
                 Text(sumOfActTempString)
                     .font(.system(size: 25, weight: .bold))
                     .onAppear {
@@ -98,6 +105,7 @@ struct SumOfActTempView: View {
                             }
                         })
                     })
+                
                 DatePicker(
                     "",
                     selection: $selectedDate,
@@ -121,9 +129,9 @@ struct SumOfActTempView: View {
                 .disabled(maxMarksCount < sumOfActTempMarks.count)
                 .opacity(maxMarksCount < sumOfActTempMarks.count ? 0 : 1)
         })
-        
         .frame(height: cUHeight, alignment: .top)
         .overlay(content: {
+            
         if showRedactor {
             Rectangle()
                 .fill(.black.opacity(0.8))
@@ -140,16 +148,17 @@ struct SumOfActTempView: View {
                 .overlay(content: {
                     MarkRedactor(cUWidth: cUWidth, mark: $markToRedact)
                 })
-//                .opacity(showRedactor ? 1 : 0)
-//                .disabled(!showRedactor)
             }
         })
     }
+    //MARK: - addButton
     private func addButton(width:CGFloat) -> HStack<some View>{
         
         return HStack(content: {
+            
             Button(action: {
                 sumOfActTempMarks.append(SumOfActTempMark(name: "", date: selectedDate, sumOfActTemp: sumOfActTempString))
+                
                 newMark(mark: sumOfActTempMarks.last!)
             
                 currentMarkIndex = sumOfActTempMarks.count - 1
@@ -168,22 +177,29 @@ struct SumOfActTempView: View {
             })
         })
     }
+    //MARK: - markBlock
     private func markBlock(width:CGFloat, index:Int) -> HStack<some View>{
+        
         let sumOfActTempMark: SumOfActTempMark = sumOfActTempMarks[index]
-        // let borderColor: Color = .gray
+        
         let dateFormatter = DateFormatter()
         dateFormatter.dateFormat = "dd.MM"
         dateFormatter.locale = Locale(identifier: "en_US_POSIX")
+        
         return HStack{
             HStack(spacing: 0, content: {
-                redactorButton(index: index)
-                Text(dateFormatter.string(from: sumOfActTempMark.date))
                 
+                redactorButton(index: index)
+                
+                Text(dateFormatter.string(from: sumOfActTempMark.date))
                     .frame(width: width * 0.2,alignment: .leading)
+                
                 Text(sumOfActTempMark.name)
                     .frame(width: width * 0.3, height: cUWidth * 0.1,alignment: .leading)
+                
                 Text(sumOfActTempMark.sumOfActTemp)
                     .frame(width: width * 0.2, height: cUWidth * 0.1)
+                
                 deleteButton(index: index)
             })
             .frame(width: width, height: cUWidth * 0.1)
@@ -196,9 +212,9 @@ struct SumOfActTempView: View {
             .shadow(radius: 10)
         }
     }
+    //MARK: - redactorButton
     private func redactorButton(index:Int) -> some View{
         Button(action: {
-          //  markToRedact = sumOfActTempMarks[index]
             currentMarkIndex = index
         }, label: {
             Image(systemName: "pencil")
@@ -208,6 +224,7 @@ struct SumOfActTempView: View {
                 .background(.clear)
         })
     }
+    //MARK: - deleteButton
     private func deleteButton(index:Int) -> some View {
         Button(action: {
             deleteMark(index: index)
@@ -221,10 +238,12 @@ struct SumOfActTempView: View {
                 .background(.clear)
         }
     }
-    
+    //MARK: - calculateSumOfActTemp
     private func calculateSumOfActTemp(since:Date, summ:@escaping (_ summ: String)->Void){
+        
         var sumOfActTemp: Float = 0
         var tempForForecast: Float = 0
+        
         getTempHistory(since: since) { weatherHistory in
             for temp in weatherHistory where temp >= minCountingTemp {
                 sumOfActTemp += temp
@@ -240,10 +259,13 @@ struct SumOfActTempView: View {
         }
         
     }
+    //MARK: - getTempHistory
     private func getTempHistory(since: Date, daylyTemp:@escaping (_ daylyTemps: [Float])->Void) {
+        
         let dateFormatter = DateFormatter()
         dateFormatter.dateFormat = "yyyy-MM-dd"
         dateFormatter.locale = Locale(identifier: "en_US_POSIX")
+        
         Task{
             do{
                 let url = URL(string: "https://archive-api.open-meteo.com/v1/archive?latitude=\(latitude)&longitude=\(longitude)&start_date=\(dateFormatter.string(from: since))&end_date=\(dateFormatter.string(from: Date()))&daily=temperature_2m_mean&timezone=Europe%2FMoscow&format=flatbuffers")!
@@ -268,6 +290,7 @@ struct SumOfActTempView: View {
             catch{}
         }
     }
+    //MARK: - newMark
     private func newMark(mark:SumOfActTempMark){
         let newMark = Mark(context: self.moc)
         newMark.date = mark.date
@@ -278,6 +301,7 @@ struct SumOfActTempView: View {
             print(error.localizedDescription)
         }
     }
+    //MARK: - saveMarks
     private func saveMarks(){
         deleteAllMarks()
         for i in 0..<sumOfActTempMarks.count{
@@ -294,6 +318,7 @@ struct SumOfActTempView: View {
             print(error.localizedDescription)
         }
     }
+    //MARK: - deleteAllMarks
     private func deleteAllMarks() {
         for mark in marks{
             moc.delete(mark)
@@ -304,36 +329,40 @@ struct SumOfActTempView: View {
             print(error.localizedDescription)
         }
     }
+    //MARK: - deleteMark
     private func deleteMark(index:Int) {
-        //        let oldMark = Mark(context: self.moc)
-        //        oldMark.date = mark.date
-        //        oldMark.name = mark.name
         
         moc.delete(marks[index])
         
-        
         do {
-            
             try self.moc.save()
         } catch {
             print(error.localizedDescription)
         }
     }
-    
+    //MARK: - MarkRedactor
     private struct MarkRedactor: View {
+        
         private let bindingMark: Binding<SumOfActTempMark>
-        //        let dateFormatter: DateFormatter
-        let calendar = Calendar.current
-        // let saveAction: () -> Void
+        
         let monthDateFormatter:DateFormatter
         let dayDateFormatter:DateFormatter
-        let avalibleMonths: [String]
+        
         let dayAmountInMonths: [String: Int]
+        
+        let avalibleMonths: [String]
+        
+        let calendar = Calendar.current
+        
         let cUWidth: CGFloat
+        
         @State var month: String = "января"
+        
         @State var dayAmount: Int = 31
         @State var day: Int = 1
+        
         @State var mark: SumOfActTempMark = .init(name: "", date: Date(timeIntervalSince1970: 0), sumOfActTemp: "")
+        
         fileprivate init(cUWidth: CGFloat, mark: Binding<SumOfActTempMark>) {
             let monthSymbols = Calendar.current.monthSymbols
             
@@ -368,16 +397,18 @@ struct SumOfActTempView: View {
             self.dayAmountInMonths = dayAmountInMonths
             self.dayDateFormatter = dayDateFormatter
             self.monthDateFormatter = monthDateFormatter
-            //    self.dateForamatter = dateFormatter
         }
         var body: some View {
             
             LazyVStack(spacing: cUWidth * 0.1,content: {
+                
                 HStack(spacing: cUWidth * 0.2, content: {
-                    dropdownMenu(width: cUWidth * 0.2, height: cUWidth * 0.1,
+                    
+                    DropdownMenu(width: cUWidth * 0.2, height: cUWidth * 0.1,
                                  expandedMenuHeight: cUWidth * 0.6,
                                  array: Array(1...dayAmount), picked: $day)
-                    dropdownMenu(width: cUWidth * 0.4, height: cUWidth * 0.1,
+                    
+                    DropdownMenu(width: cUWidth * 0.4, height: cUWidth * 0.1,
                                  expandedMenuHeight: cUWidth * 0.6,
                                  array: avalibleMonths, picked: $month)
                 })
@@ -412,16 +443,13 @@ struct SumOfActTempView: View {
                 Color.white.clipShape(RoundedRectangle(cornerRadius: Default.cornerRadius))
             })
             .ignoresSafeArea()
-            
             .onAppear(){
                 mark = bindingMark.wrappedValue
                 day = calendar.component(.day, from: mark.date)
                 month = calendar.monthSymbols[(calendar.component(.month, from: mark.date)) - 1]
-//                print(bindingMark.wrappedValue)
             }
             .onChange(of: mark.date, {
                 bindingMark.wrappedValue.date = mark.date
-//                print(mark.date)
             })
             
             .shadow(radius: 10)
@@ -435,7 +463,4 @@ struct SumOfActTempView: View {
             return dateFormatter.date(from: string)!
         }
     }
-    
 }
-
-
