@@ -3,16 +3,14 @@ import Foundation
 
 struct WeatherData{
     let hourlyData:[ForecastHourDatum]
+    
     let daylyData:[ForecastDayDatum]
+    
     let cityName:String
+    
     let current:WeatherForecastData.Hour
+    
     init(data:WeatherForecastData.Data) {
-       // var hourlyData: [WeatherForecastData.Hour] = []
-//        for day in data.forecast.forecastday {
-//            for hour in day.hour {
-//                hourlyData.append(hour)
-//            }
-//        }
         self.hourlyData = ForecastHourDatum.initForecastHourDatums(data: data, startTs: data.current.timeEpoch)
         self.daylyData = ForecastDayDatum.initForecastData(data: data)
         self.cityName = data.location.name
@@ -23,19 +21,24 @@ struct WeatherData{
 //MARK: - DayDatum
 struct ForecastDayDatum{
     let date:FormatedDate
+    
     let ditailData:DitailData
+    
     let sunData:SunData
+    
     let windData:WindData
+    
     let weatherIcon:String
-    let temp:String
     let minTemp:String
+    let avrgTemp:String
+    
     private init(date: FormatedDate, ditailData: DitailData, sunData: SunData, hourlyData:[WeatherForecastData.Hour], weatherIcon: String, temp: Double, minTemp:Double) {
         self.date = date
         self.ditailData = ditailData
         self.sunData = sunData
         self.windData = WindData.init(data: hourlyData)
         self.weatherIcon = weatherIcon
-        self.temp = "\(Int(round(temp)))°"
+        self.avrgTemp = "\(Int(round(temp)))°"
         self.minTemp = "(\(Int(round(minTemp)))°)"
     }
     static func initForecastData(data:WeatherForecastData.Data) -> [ForecastDayDatum]{
