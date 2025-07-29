@@ -124,6 +124,7 @@ struct WeatherView: View {
         })
         
     }
+    //Mark: -DataFuncs
     private func getData(){
             getWeatherData(weatherData: { weatherData in
                 self.weatherData = WeatherData(data: weatherData)
