@@ -65,7 +65,7 @@ struct ForecastDayView: View {
                     Text(dayDatum.minTemp)
                         .font(.system(size: 17).weight(.medium))
                         .foregroundStyle(.white)
-                    Text(dayDatum.temp)
+                    Text(dayDatum.avrgTemp)
                         .font(.system(size: 30).weight(.medium))
                         .foregroundStyle(.white)
                 })
