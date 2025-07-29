@@ -3,6 +3,7 @@ import SwiftUI
 import MapKit
 import Foundation
 
+//MARK: - Default
 struct Default{
     static let cornerRadius:CGFloat = 15
     static let borderWidth:CGFloat = 0.5
@@ -10,7 +11,7 @@ struct Default{
 }
 
 @main
-
+//MARK: - App
 struct Weather2App: App {
     @ObservedObject private var locationManager = LocationManager()
     let persistenceController = PersistenceController.shared
@@ -40,8 +41,8 @@ struct Weather2App: App {
         }
     }
 }
-
-struct dropdownMenu<T>: View {
+//MARK: - DropdownMenu
+struct DropdownMenu<T>: View {
     @State private var expanded:Bool = false
     
     var menuArray: [T]
