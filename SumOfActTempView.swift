@@ -3,10 +3,14 @@ import SwiftUI
 import OpenMeteoSdk
 import CoreData
 import Foundation
+
 fileprivate struct SumOfActTempMark{
-    var name:String
-    var date:Date
+    
     var sumOfActTemp:String
+    var name:String
+    
+    var date:Date
+    
     init(name: String, date: Date, sumOfActTemp:String) {
         self.name = name
         self.date = date
