@@ -18,7 +18,7 @@ struct WeatherData{
     }
 }
 
-//MARK: - DayDatum
+//MARK: - ForecastDayDatum
 struct ForecastDayDatum{
     let date:FormatedDate
     
