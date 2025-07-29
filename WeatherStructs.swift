@@ -1,6 +1,6 @@
 
 import Foundation
-
+//MARK: - WeatherData
 struct WeatherData{
     let hourlyData:[ForecastHourDatum]
     
@@ -29,8 +29,8 @@ struct ForecastDayDatum{
     let windData:WindData
     
     let weatherIcon:String
-    let minTemp:String
     let avrgTemp:String
+    let minTemp:String
     
     private init(date: FormatedDate, ditailData: DitailData, sunData: SunData, hourlyData:[WeatherForecastData.Hour], weatherIcon: String, temp: Double, minTemp:Double) {
         self.date = date
@@ -61,12 +61,10 @@ struct ForecastDayDatum{
         return result
     }
 }
-//MARK: - HourDatum
+//MARK: - ForecastHourDatum
 struct ForecastHourDatum{
     let hour:String
-  //  let ts:Int
     let weatherIcon:String
-//TODO: - RENAME ALL BULL SHIT
     let temp:String
     let ts:Int
     private init(datum:WeatherForecastData.Hour) {
@@ -88,13 +86,15 @@ struct ForecastHourDatum{
     }
 }
 //MARK: - DitailData
-
 struct DitailData{
+    //MARK: - QwarterData
+    
     struct QwarterData{
+        
         let maxTemp:String
         let minTemp:String
-        let conditionIcon:String
         let windSpeed:String
+        let conditionIcon:String
         
         private init(maxTemp: String, minTemp: String, condition: String, windSpeed: String) {
             self.maxTemp = maxTemp
@@ -102,6 +102,7 @@ struct DitailData{
             self.conditionIcon = condition
             self.windSpeed = windSpeed
         }
+        
         fileprivate init(data:[WeatherForecastData.Hour]){
             
             var minTemp = 100.0
@@ -122,10 +123,11 @@ struct DitailData{
             self.minTemp = "\(Int(round(minTemp)))°"
             self.windSpeed = "\(Int(round(windSpeed * 0.278))) м/с"
         }
+        
         static fileprivate func nullDatum() -> QwarterData{
             return QwarterData(maxTemp: "N/A", minTemp: "N/A", condition: "nullCondition", windSpeed: "N/A")
         }
-        //TODO: TOTAL REWORK
+        
         private static func avrgConditionIcon(data:[WeatherForecastData.Hour]) -> String{
             var conditions:[String] = []
             var topCondition = ("", -1)
@@ -142,36 +144,15 @@ struct DitailData{
             }
             return topCondition.0
         }
-//        private static func avrgDayCondition(data:[Weather120HoursForecast.Datum]) -> String{
-//       //     guard data.count >= 6 else{return "nullCondition"}
-//            var dayConditions:[(String, Int)] = []
-//            var topCondition = ("", -1)
-//            for datum in data{
-//                dayConditions = checkWeather(conditions: dayConditions, data: datum)
-//            }
-//            for condition in dayConditions {
-//                guard topCondition.1 < condition.1 else{continue}
-//                topCondition = condition
-//            }
-//            return topCondition.0
-//        }
-//        private static func checkWeather(conditions:[(String, Int)], data:Weather120HoursForecast.Datum) -> [(String, Int)]{
-//            var conditions = conditions
-//            for condition in 0..<conditions.count{
-//                guard conditions[condition].0 == data.weather.icon else{continue}
-//                conditions[condition].1 += 1
-//                return conditions
-//            }
-//            conditions.append((data.weather.icon,0))
-//            return conditions
-//        }
-        
     }
-    //   let date:FormatedDate
+    
+    //MARK - DitailData inits
     let qwarters:[QwarterData]
+    
     private init(qwarters:[QwarterData]) {
         self.qwarters = qwarters
     }
+    
     private init(data:[WeatherForecastData.Hour]) {
         var qwarters:[QwarterData] = []
         qwarters.append(QwarterData(data: Array(data[0..<7])))
@@ -182,53 +163,70 @@ struct DitailData{
         
         self.qwarters = qwarters
     }
+    //MARK - DitailData funcs
     static fileprivate func initWithDeficientDatum(data:[WeatherForecastData.Hour]) -> DitailData{
         var qwarters:[QwarterData] = []
         switch data.count {
+            
         case 7:
             qwarters = Array(repeating: QwarterData.nullDatum(), count: 3)
             qwarters.append(QwarterData(data: Array(data[0..<7])))
+            
         case 13:
             qwarters = Array(repeating: QwarterData.nullDatum(), count: 2)
             qwarters.append(QwarterData(data: Array(data[0..<7])))
             qwarters.append(QwarterData(data: Array(data[7..<13])))
+            
         case 18:
             qwarters = [QwarterData.nullDatum()]
             qwarters.append(QwarterData(data: Array(data[0..<7])))
             for i in 1..<3{
                 qwarters.append(QwarterData(data: Array(data[(i * 6)..<(i * 6 + 6)])))
             }
+            
         case 24:
             return DitailData(data: data)
+            
         default:
             return DitailData.empty()
         }
+        
         return DitailData(qwarters: qwarters)
     }
+    
     static fileprivate func empty() -> DitailData {
         return DitailData(qwarters: Array(repeating: QwarterData.nullDatum(), count: 4))
     }
+    
     static fileprivate func initDitailDates(data:WeatherForecastData.Data) -> [DitailData] {
-     //   guard data.data.count >= 120 else{return []}
+
         var hourlyData:[WeatherForecastData.Hour] = []
+        
+        var result:[DitailData] = []
+        
+        let currentDayData:ArraySlice<WeatherForecastData.Hour>
+        
         for day in data.forecast.forecastday{
             for hour in day.hour{
                 hourlyData.append(hour)
             }
         }
-         
-        var result:[DitailData] = []
-        let currentDayData:ArraySlice<WeatherForecastData.Hour>
+        
         while true{
             let date = Date(timeIntervalSince1970: TimeInterval(hourlyData[0].timeEpoch ?? 0)).formatted(date: .omitted, time: .shortened)
+
             guard date != "05:00" else{currentDayData = hourlyData[0..<24]; break}
+            
             guard date != "12:00" else{currentDayData = hourlyData[0..<18]; break}
+            
             guard date != "17:00" else{currentDayData = hourlyData[0..<13]; break}
+            
             guard date != "22:00" else{currentDayData = hourlyData[0..<7]; break}
+            
             guard date != "23:00" else{currentDayData = []; hourlyData.removeFirst(6); break}
+            
             hourlyData.removeFirst()
         }
-        
         
         result.append(DitailData.initWithDeficientDatum(data: Array(currentDayData)))
         hourlyData.removeFirst(currentDayData.count)
@@ -243,16 +241,21 @@ struct DitailData{
 }
 //MARK: - WindData
 struct WindData{
+    
     let speed:String
     let direction:String
+    
     fileprivate init(data:[WeatherForecastData.Hour]) {
         var totalWindSpeed:Double = 0
         
         for datum in data{
             totalWindSpeed += Double(datum.windKph)
         }
+        
         let speed:Double = (totalWindSpeed / Double(data.count)) * 0.278
+        
         let speedString = "\(Int(round(speed))) м/с"
+        
         let direction = Self.translateWindDirection(Self.avrgWindDirection(data: data))
         
         self.speed = speedString
@@ -261,17 +264,22 @@ struct WindData{
     private static func avrgWindDirection(data:[WeatherForecastData.Hour]) -> String{
         var windDirections:[String] = []
         var topWindDirection = ("", -1)
+        
         for datum in data{
             windDirections.append(datum.windDir)
         }
+        
         var directionCounts: [String: Int] = [:]
+        
         for item in windDirections{
             directionCounts[item] = (directionCounts[item] ?? 0) + 1
         }
+        
         for (key, value) in directionCounts {
             guard value > topWindDirection.1 else{continue}
             topWindDirection = (key, value)
         }
+        
         return topWindDirection.0
     }
     static private func translateWindDirection(_ wind:String) -> String{
@@ -285,12 +293,16 @@ struct WindData{
 }
 //MARK: SunData
 struct SunData{
+    
+    let dayLength:String
     let sunrise:String
     let sunset:String
-    let dayLength:String
+    
     let sunriseTs:Int
     let sunsetTs:Int
+    
     fileprivate init(sunriseTs: Int, sunsetTs: Int) {
+        
         let sunrise = Date(timeIntervalSince1970: TimeInterval(sunriseTs))
         let sunset = Date(timeIntervalSince1970: TimeInterval(sunsetTs))
         let dayLength = Date(timeIntervalSince1970: TimeInterval(sunsetTs - sunriseTs))
@@ -304,22 +316,29 @@ struct SunData{
     static fileprivate func convertFromAstro(data:WeatherForecastData.Astro) -> SunData{
         let dateformatter = DateFormatter()
         dateformatter.dateFormat = "hh:mm a"
+        
         let sunriseTs = Int(dateformatter.date(from: data.sunrise)?.timeIntervalSince1970 ?? 0)
         let sunsetTs = Int(dateformatter.date(from: data.sunset)?.timeIntervalSince1970 ?? 0)
+        
         return SunData(sunriseTs: sunriseTs, sunsetTs: sunsetTs)
     }
 }
 //MARK: - FormatedDate
 struct FormatedDate{
+    
     let date:String
     let weekDay:String
+    
     init(date:Int) {
+        
         let weekDayDateFormater = DateFormatter()
             weekDayDateFormater.locale = Locale(identifier: "ru_RU")
             weekDayDateFormater.dateFormat = "EEEE"
+        
         let dateFormater = DateFormatter()
             dateFormater.locale = Locale(identifier: "ru_RU")
             dateFormater.dateFormat = "dd MMMM"
+        
         weekDay = weekDayDateFormater.string(from: Date(timeIntervalSince1970: TimeInterval(date))).capitalized(with: Locale(identifier: "ru_RU"))
         self.date = dateFormater.string(from: Date(timeIntervalSince1970: TimeInterval(date))).capitalized(with: Locale(identifier: "ru_RU"))
         
