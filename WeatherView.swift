@@ -38,7 +38,7 @@ struct WeatherView: View {
                     
                     ScrollView(.vertical, content: {
                         VStack(spacing: 0, content: {
-                            weatherForgecastScroll()
+                            forgecastScroll()
                         })
                         .frame(width: cUWidth)
                     })
@@ -52,6 +52,7 @@ struct WeatherView: View {
             })
         }
     }
+    //MARK: - dayInfo
     func dayInfo() -> LazyVStack<some View>{
         
         LazyVStack(spacing: 0, content: {
@@ -83,6 +84,7 @@ struct WeatherView: View {
             }
         })
     }
+    //MARK: - hourlyTemperatureBar
     func hourlyTemperatureBar() -> LazyVStack<some View>{
         LazyVStack(spacing: 0, content: {
             ScrollView(.horizontal){
@@ -113,7 +115,8 @@ struct WeatherView: View {
             .scrollIndicators(.never)
         })
     }
-    func weatherForgecastScroll() -> VStack<some View>{
+    //MARK: - forgecastScroll
+    func forgecastScroll() -> VStack<some View>{
         VStack(spacing: 0, content: {
             ForEach(0..<daylyScrollLength, id: \.self){i in
                 if let dayDatum = weatherData?.daylyData[i]{
@@ -124,7 +127,7 @@ struct WeatherView: View {
         })
         
     }
-    //Mark: -DataFuncs
+    //MARK: - DataFuncs
     private func getData(){
             getWeatherData(weatherData: { weatherData in
                 self.weatherData = WeatherData(data: weatherData)
