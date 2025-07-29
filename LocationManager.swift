@@ -1,9 +1,3 @@
-//
-//  LocationManager.swift
-//  Weather
-//
-//  Created by Jan Ivashenka on 16.09.24.
-//
 
 import Foundation
 import MapKit
